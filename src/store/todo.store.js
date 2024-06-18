@@ -1,6 +1,6 @@
 import { Todo } from "../todos/models/todo.model";
 
-const Filters = {
+export const Filters = {
   All: "all",
   Completed: "Completed",
   Pending: "Pending",
@@ -18,12 +18,22 @@ const state = {
 };
 
 const InitStore = () => {
-  console.log(state);
+  loadStore();
   console.log("InitStore 🥑");
 };
 
 const loadStore = () => {
-  throw new Error("Not Implemented");
+  if (!localStorage.getItem("state")) return;
+
+  const { todos = [], filter = filter.All } = JSON.parse(
+    localStorage.getItem("state")
+  );
+  state.todos = todos;
+  state.filter = filter;
+};
+
+const SaveStateToLocalStore = () => {
+  localStorage.setItem("state", JSON.stringify(state));
 };
 
 const getTodos = (filter = Filters.All) => {
@@ -49,6 +59,7 @@ const getTodos = (filter = Filters.All) => {
 const addTodo = (description) => {
   if (!description) throw new Error("Description is required");
   state.todos.push(new Todo(description));
+  SaveStateToLocalStore();
 };
 
 /**
@@ -62,20 +73,24 @@ const toggleTodo = (todoId) => {
     }
     return todo;
   });
+
+  SaveStateToLocalStore();
 };
 
 /**
  * @param {String} deleteTodo es quien va elimiar el Id del todo. (actualización)
  */
 const deleteTodo = (todoId) => {
-  state.todos = state.todos.filter((todo) => todo.id !== todo.id);
+  state.todos = state.todos.filter((todo) => todo.id !== todoId);
+  SaveStateToLocalStore();
 };
 
 /**
  * @param {String} delateComplete Borrar todos los todos que tengo.
  */
 const delateComplete = () => {
-  state.todos = state.todos.filter((todo) => todo.done);
+  state.todos = state.todos.filter((todo) => !todo.done);
+  SaveStateToLocalStore();
 };
 
 /**
@@ -83,6 +98,7 @@ const delateComplete = () => {
  */
 const setFilter = (newFilter = Filters.All) => {
   state.filter = newFilter;
+  SaveStateToLocalStore();
 };
 
 /**
@@ -98,10 +114,10 @@ export default {
   delateComplete,
   deleteTodo,
   getCurrentFilter,
-  
   getTodos,
   InitStore,
   loadStore,
   setFilter,
   toggleTodo,
+  
 };
